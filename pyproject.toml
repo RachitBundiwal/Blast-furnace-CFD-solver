@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bf2d-solver"
+version = "1.0.0"
+description = "2D axisymmetric blast furnace solver (PISO + full physics)"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{name = "Rachit"}]
+license = {text = "Proprietary"}
+dependencies = [
+    "numpy>=1.24,<3.0",
+    "scipy>=1.10,<2.0",
+    "matplotlib>=3.7,<4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4,<9.0",
+    "pytest-cov>=4.1,<6.0",
+    "ruff>=0.4",
+    "bandit>=1.7",
+    "pip-audit>=2.6",
+]
+
+[project.scripts]
+bf2d-run = "run_simulation:main"
+
+[tool.setuptools.packages.find]
+include = ["bf2d*"]
+exclude = ["tests*"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "slow: long-running integration tests (multi-minute solver runs); deselect with -m 'not slow'",
+]
+
+[tool.coverage.run]
+source = ["bf2d"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "N", "UP", "S", "A"]
+ignore = ["S101", "B008", "N803", "N806"]  # allow asserts in tests, mutable defaults in dataclass, math var names
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "S311"]
+
+[tool.bandit]
+exclude_dirs = ["tests", ".github"]

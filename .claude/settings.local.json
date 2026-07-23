@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(python validate_plant.py --json out\\\\after_15x40_120.json)"
+    ]
+  }
+}
