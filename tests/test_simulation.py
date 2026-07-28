@@ -5,8 +5,8 @@ import numpy as np
 import pytest
 
 from bf2d.parameters import BFParameters2D
-from bf2d.simulation import BlastFurnaceSimulation
 from bf2d.postprocess import summary_metrics
+from bf2d.simulation import BlastFurnaceSimulation
 
 
 @pytest.fixture(scope="module")
@@ -56,7 +56,7 @@ class TestIntegrationSmallCase:
 
     def test_mass_fractions_bounded(self, small_run) -> None:
         _, _, r = small_run
-        for ph, field in r["f_solid"].items():
+        for _ph, field in r["f_solid"].items():
             assert field.min() >= -1e-9
             assert field.max() <= 1.0 + 1e-6
 

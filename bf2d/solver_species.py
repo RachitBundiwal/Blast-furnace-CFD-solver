@@ -33,12 +33,10 @@ References
 """
 from __future__ import annotations
 
-from typing import Dict, Tuple
-
 import numpy as np
 import scipy.sparse as sps
 
-from .constants import GAS_SPECIES, MW, EPS_MOLE, SOLID_PHASES
+from .constants import GAS_SPECIES, MW
 from .linear_solver import solve_linear_system
 from .mesh import Mesh2D
 from .parameters import BFParameters2D
@@ -65,21 +63,21 @@ def _face_avg_z(f: np.ndarray, i: int, j_face: int, nz: int) -> float:
 
 
 # ---------------------------------------------------------------------------
-def _x_to_Y(x_gas: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
+def _x_to_Y(x_gas: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
     """Mole fractions -> mass fractions, cell-wise."""
     mw_total = sum(x_gas[sp] * MW[sp] for sp in GAS_SPECIES)
     mw_total = np.maximum(mw_total, 1e-9)
     return {sp: x_gas[sp] * MW[sp] / mw_total for sp in GAS_SPECIES}
 
 
-def _Y_to_x(Y_gas: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
+def _Y_to_x(Y_gas: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
     """Mass fractions -> mole fractions, cell-wise."""
     n_total = sum(Y_gas[sp] / MW[sp] for sp in GAS_SPECIES)
     n_total = np.maximum(n_total, 1e-9)
     return {sp: (Y_gas[sp] / MW[sp]) / n_total for sp in GAS_SPECIES}
 
 
-def _composition_x_to_Y(x_dict: Dict[str, float]) -> Dict[str, float]:
+def _composition_x_to_Y(x_dict: dict[str, float]) -> dict[str, float]:
     """Scalar mole-fraction composition -> scalar mass-fraction composition."""
     mw_total = sum(x_dict.get(sp, 0.0) * MW[sp] for sp in GAS_SPECIES)
     mw_total = max(mw_total, 1e-9)
@@ -88,19 +86,19 @@ def _composition_x_to_Y(x_dict: Dict[str, float]) -> Dict[str, float]:
 
 # ---------------------------------------------------------------------------
 def solve_species(
-    x_gas: Dict[str, np.ndarray],
+    x_gas: dict[str, np.ndarray],
     rho_g: np.ndarray,
     mw_mix: np.ndarray,
     u_r: np.ndarray,
     u_z: np.ndarray,
     eps: np.ndarray,
-    sources_mol: Dict[str, np.ndarray],
+    sources_mol: dict[str, np.ndarray],
     raceway_mask_gas: np.ndarray,
-    raceway_composition: Dict[str, float],
+    raceway_composition: dict[str, float],
     mesh: Mesh2D,
     p: BFParameters2D,
     relaxation: float = 0.7,
-) -> Tuple[Dict[str, np.ndarray], Dict[str, float]]:
+) -> tuple[dict[str, np.ndarray], dict[str, float]]:
     """Advance the six gas species using conservative mass-fraction transport.
 
     Inputs and outputs are in **mole fractions** for backward compatibility
@@ -135,8 +133,8 @@ def solve_species(
     sources_mass = {sp: sources_mol[sp] * MW[sp] for sp in GAS_SPECIES}
     Y_blast = _composition_x_to_Y(raceway_composition)
 
-    new_Y: Dict[str, np.ndarray] = {}
-    residuals: Dict[str, float] = {}
+    new_Y: dict[str, np.ndarray] = {}
+    residuals: dict[str, float] = {}
 
     for sp in GAS_SPECIES:
         rows: list[int] = []
@@ -144,8 +142,17 @@ def solve_species(
         vals: list[float] = []
         b = np.zeros(n)
 
-        def add(r: int, c: int, v: float) -> None:
-            rows.append(r); cols.append(c); vals.append(v)
+        # Default-argument binding forces early capture of THIS iteration's
+        # rows/cols/vals (ruff B023: a closure over a loop-body variable is
+        # only safe if it can never be called after the next iteration
+        # rebinds that variable, which holds here -- add() is only ever
+        # invoked inside the same iteration it's defined in -- but the
+        # default-arg form makes that invariant explicit instead of relying
+        # on it).
+        def add(r: int, c: int, v: float,
+                _rows: list[int] = rows, _cols: list[int] = cols,
+                _vals: list[float] = vals) -> None:
+            _rows.append(r); _cols.append(c); _vals.append(v)
 
         for j in range(nz):
             for i in range(nr):
@@ -274,16 +281,16 @@ def solve_species(
 
 # ---------------------------------------------------------------------------
 def update_solid_phases(
-    f_solid: Dict[str, np.ndarray],
+    f_solid: dict[str, np.ndarray],
     rho_s_bulk: np.ndarray,
-    solid_sources: Dict[str, np.ndarray],
+    solid_sources: dict[str, np.ndarray],
     u_s_descent: np.ndarray,
     mesh: Mesh2D,
     p: BFParameters2D,
-    burden_inlet_composition: Dict[str, float],
+    burden_inlet_composition: dict[str, float],
     relaxation: float = 0.5,
     dt_override: float | None = None,
-) -> Tuple[Dict[str, np.ndarray], Dict[str, float]]:
+) -> tuple[dict[str, np.ndarray], dict[str, float]]:
     """Advect + react solid mass-fraction fields.
 
     Parameters
@@ -301,8 +308,8 @@ def update_solid_phases(
     """
     nr, nz = mesh.nr, mesh.nz
     n = nr * nz
-    new_f: Dict[str, np.ndarray] = {}
-    residuals: Dict[str, float] = {}
+    new_f: dict[str, np.ndarray] = {}
+    residuals: dict[str, float] = {}
 
     dt_use = dt_override if dt_override is not None else p.dt
 
@@ -350,8 +357,17 @@ def update_solid_phases(
         vals: list[float] = []
         b = np.zeros(n)
 
-        def add(r: int, c: int, v: float) -> None:
-            rows.append(r); cols.append(c); vals.append(v)
+        # Default-argument binding forces early capture of THIS iteration's
+        # rows/cols/vals (ruff B023: a closure over a loop-body variable is
+        # only safe if it can never be called after the next iteration
+        # rebinds that variable, which holds here -- add() is only ever
+        # invoked inside the same iteration it's defined in -- but the
+        # default-arg form makes that invariant explicit instead of relying
+        # on it).
+        def add(r: int, c: int, v: float,
+                _rows: list[int] = rows, _cols: list[int] = cols,
+                _vals: list[float] = vals) -> None:
+            _rows.append(r); _cols.append(c); _vals.append(v)
 
         S = solid_sources.get(ph, np.zeros_like(f_field))
 

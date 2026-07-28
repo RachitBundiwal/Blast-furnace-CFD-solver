@@ -7,11 +7,14 @@ instance is the only configuration object that downstream modules accept.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field, asdict
-from typing import Any, Dict
+from dataclasses import asdict, dataclass, field
+from typing import Any
 
 from .constants import (
-    T_MIN_PHYSICAL, T_MAX_PHYSICAL, P_MIN_PHYSICAL, P_MAX_PHYSICAL,
+    P_MAX_PHYSICAL,
+    P_MIN_PHYSICAL,
+    T_MAX_PHYSICAL,
+    T_MIN_PHYSICAL,
 )
 
 
@@ -350,7 +353,7 @@ class BFParameters2D:
         _check(self.convergence_rms > 0, "convergence_rms must be positive")
 
     # -----------------------------------------------------------------------
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serializable representation (°C alongside K for readability)."""
         d = asdict(self)
         d["blast_temperature_C"] = self.blast_temperature - 273.15

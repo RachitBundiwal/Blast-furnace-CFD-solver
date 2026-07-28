@@ -17,11 +17,10 @@ and Phase 2 can be swapped in without touching any other solver code.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Tuple
 
 import numpy as np
 
-from .constants import GAS_SPECIES, MW, MOL_VOL_NTP, R_GAS
+from .constants import GAS_SPECIES, MOL_VOL_NTP, MW, R_GAS
 from .mesh import Mesh2D
 from .parameters import BFParameters2D
 
@@ -55,11 +54,11 @@ class Raceway:
         Reference density at blast conditions [kg/m^3].
     """
 
-    face_indices: List[Tuple[int, int]]
+    face_indices: list[tuple[int, int]]
     v_tuyere: float
     G_tuyere: float          # kg/(m^2 s) -- THE boundary specification
     T_blast: float
-    x_gas_blast: Dict[str, float]
+    x_gas_blast: dict[str, float]
     total_blast_kg_s: float
     rho_blast: float
     shape_mask: np.ndarray = field(default_factory=lambda: np.zeros(0))
@@ -72,7 +71,7 @@ class Raceway:
 # ---------------------------------------------------------------------------
 def _raceway_exit_temperature(
     p: BFParameters2D,
-    x_bosh: Dict[str, float],
+    x_bosh: dict[str, float],
 ) -> float:
     """Compute the post-combustion (bosh gas) temperature via 0D enthalpy balance.
 
@@ -126,9 +125,8 @@ def _raceway_exit_temperature(
     n_o2_partial = n_o2 * f_partial
     n_o2_full    = n_o2 * (1.0 - f_partial)
 
-    # Carbon consumed (mol C per Nm^3 blast)
-    n_C_R1b = n_o2_partial * 1.0     # 1 mol C per mol O2 in R1b (C + 1/2 O2 -> CO; need 2 R1b per O2)
-    # Wait: R1b is "C + 1/2 O2 -> CO".  So 2 mol C per mol O2 in R1b.
+    # Carbon consumed (mol C per Nm^3 blast).  R1b is C + 1/2 O2 -> CO,
+    # so 2 mol C per mol O2.
     n_C_R1b = n_o2_partial * 2.0
     n_C_R1  = n_o2_full * 1.0        # 1 mol C per mol O2 in R1
     # Only the REACTED moisture consumes carbon / absorbs R6 heat; the
@@ -172,7 +170,7 @@ def _raceway_exit_temperature(
     return float(np.clip(T_bosh, 1800.0, 2500.0))
 
 
-def _blast_composition(p: BFParameters2D) -> Tuple[Dict[str, float], float]:
+def _blast_composition(p: BFParameters2D) -> tuple[dict[str, float], float]:
     """Composition of gas LEAVING the raceway (not the raw blast).
 
     Returns ``(mole_fractions, exit_moles_per_Nm3_dry_blast)`` -- the
@@ -333,7 +331,7 @@ def _blast_composition(p: BFParameters2D) -> Tuple[Dict[str, float], float]:
     return x, n_total
 
 
-def _blast_density(p: BFParameters2D, x_gas: Dict[str, float]) -> float:
+def _blast_density(p: BFParameters2D, x_gas: dict[str, float]) -> float:
     """Ideal-gas blast density at tuyere conditions [kg/m^3]."""
     mw_mix = sum(x_gas[sp] * MW[sp] for sp in GAS_SPECIES)
     # Tuyere is at the bottom; pressure ~ top + shaft dP (~0.5 bar typical)
@@ -399,7 +397,7 @@ def build_raceway(mesh: Mesh2D, p: BFParameters2D) -> Raceway:
     # rank candidates by distance from p.tuyere_elevation and pick the
     # closest few until accumulated area >= A_phys.
     # ------------------------------------------------------------------
-    candidates: List[Tuple[float, int, int, float]] = []
+    candidates: list[tuple[float, int, int, float]] = []
     # (distance, i_face, j, face_area)
     for j in range(mesh.nz):
         active_i = np.where(mesh.active[:, j])[0]
@@ -420,7 +418,7 @@ def build_raceway(mesh: Mesh2D, p: BFParameters2D) -> Raceway:
     candidates.sort(key=lambda t: t[0])
 
     # Accumulate faces until we cover A_phys (or run out)
-    face_indices: List[Tuple[int, int]] = []
+    face_indices: list[tuple[int, int]] = []
     total_area = 0.0
     for (_dist, i_face, j, face_area) in candidates:
         if total_area >= A_phys:

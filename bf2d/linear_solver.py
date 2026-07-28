@@ -21,11 +21,10 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional
 
 import numpy as np
 import scipy.sparse as sp
-from scipy.sparse.linalg import spsolve, gmres, LinearOperator
+from scipy.sparse.linalg import gmres, spsolve
 
 try:
     import pyamg  # type: ignore
@@ -54,7 +53,7 @@ def solve_linear_system(
     gmres_tol: float = 1.0e-8,
     gmres_maxiter: int = 300,
     gmres_restart: int = 40,
-    x0: Optional[np.ndarray] = None,
+    x0: np.ndarray | None = None,
 ) -> tuple[np.ndarray, LinearSolveStats]:
     """Solve ``A x = b`` with adaptive method selection.
 
@@ -122,7 +121,7 @@ def _gmres_amg_solve(
     tol: float,
     maxiter: int,
     restart: int,
-    x0: Optional[np.ndarray],
+    x0: np.ndarray | None,
 ) -> tuple[np.ndarray, LinearSolveStats]:
     """Smoothed-aggregation AMG preconditioned GMRES."""
     # Build preconditioner.  SA is robust for the symmetric-ish block

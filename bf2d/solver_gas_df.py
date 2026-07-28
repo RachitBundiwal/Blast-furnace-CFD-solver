@@ -65,7 +65,6 @@ Boundary conditions
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
 
 import numpy as np
 import scipy.sparse as sps
@@ -75,7 +74,6 @@ from .mesh import Mesh2D
 from .parameters import BFParameters2D
 from .properties import ergun_pressure_drop_coeff
 from .raceway import Raceway
-
 
 G_ACC = 9.81  # m/s^2
 
@@ -169,7 +167,7 @@ def _velocity_from_pressure(
     P: np.ndarray, rho: np.ndarray, eps: np.ndarray,
     K_r: np.ndarray, K_z: np.ndarray,
     mesh: Mesh2D, raceway: Raceway,
-    gas_exit_mask: Optional[np.ndarray],
+    gas_exit_mask: np.ndarray | None,
     m_source_total: float = 0.0,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Compute u_r, u_z from p via Darcy-Forchheimer (superficial velocity).
@@ -191,7 +189,6 @@ def _velocity_from_pressure(
     nr, nz = mesh.nr, mesh.nz
     u_r = np.zeros((nr + 1, nz))
     u_z = np.zeros((nr, nz + 1))
-    tuyere_set = set(raceway.face_indices)
 
     # ----- radial faces -----
     for j in range(nz):
@@ -316,7 +313,7 @@ def _assemble_pressure_poisson(
     P_old: np.ndarray, rho: np.ndarray, eps: np.ndarray,
     K_r: np.ndarray, K_z: np.ndarray, mass_source: np.ndarray,
     mesh: Mesh2D, p: BFParameters2D, raceway: Raceway,
-    gas_exit_mask: Optional[np.ndarray],
+    gas_exit_mask: np.ndarray | None,
 ) -> tuple[sps.csr_matrix, np.ndarray]:
     """Assemble the Darcy-Forchheimer pressure-Poisson equation.
 
@@ -471,7 +468,7 @@ def solve_coupled_momentum(
     mass_source: np.ndarray,
     mesh: Mesh2D, p: BFParameters2D, raceway: Raceway,
     relaxation: float = 0.5,
-    gas_exit_mask: Optional[np.ndarray] = None,
+    gas_exit_mask: np.ndarray | None = None,
     n_K_iter: int = 5,
     relax_p: float = 0.7,
 ) -> MomentumSolution:
@@ -510,7 +507,7 @@ def solve_coupled_momentum(
 
     last_du = 0.0
     last_lin_ok = True
-    for k_iter in range(n_K_iter):
+    for _k_iter in range(n_K_iter):
         # 1. Update K from current velocity magnitude (cell-centered)
         u_mag = np.zeros((nr, nz))
         for j in range(nz):

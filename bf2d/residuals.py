@@ -10,7 +10,6 @@ physically meaningful imbalance (one percent of the typical flux).
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
 
 import numpy as np
 
@@ -28,8 +27,8 @@ class ResidualSnapshot:
     species_max: float = 0.0
     solid_max: float = 0.0
     # Per-species detail (optional)
-    species_detail: Dict[str, float] = field(default_factory=dict)
-    solid_detail: Dict[str, float] = field(default_factory=dict)
+    species_detail: dict[str, float] = field(default_factory=dict)
+    solid_detail: dict[str, float] = field(default_factory=dict)
 
     def max(self) -> float:
         """Worst residual across all equations."""
@@ -124,14 +123,14 @@ class ResidualHistory:
     """Ring-like container for residual trajectories + stall detection."""
 
     def __init__(self, stall_window: int = 5, stall_factor: float = 0.95) -> None:
-        self._snaps: List[ResidualSnapshot] = []
+        self._snaps: list[ResidualSnapshot] = []
         self._stall_window = stall_window
         self._stall_factor = stall_factor
 
     def add(self, snap: ResidualSnapshot) -> None:
         self._snaps.append(snap)
 
-    def latest(self) -> Optional[ResidualSnapshot]:
+    def latest(self) -> ResidualSnapshot | None:
         return self._snaps[-1] if self._snaps else None
 
     def is_stalled(self) -> bool:
@@ -153,7 +152,7 @@ class ResidualHistory:
                 last4[2] > last4[1] and
                 last4[3] > last4[2])
 
-    def as_list(self) -> List[dict]:
+    def as_list(self) -> list[dict]:
         return [s.to_dict() for s in self._snaps]
 
     def __len__(self) -> int:

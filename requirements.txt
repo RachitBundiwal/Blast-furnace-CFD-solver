@@ -3,5 +3,7 @@ scipy>=1.10,<2.0
 matplotlib>=3.7,<4.0
 
 # Dev / test
-pytest>=7.4,<9.0
+# pytest lower bound is the PYSEC-2026-1845 fix (tmpdir-handling local
+# privilege-escalation / DoS on UNIX); every pytest<9.0.3 is affected.
+pytest>=9.0.3,<10.0
 pytest-cov>=4.1,<6.0

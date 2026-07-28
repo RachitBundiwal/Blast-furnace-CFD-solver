@@ -18,36 +18,52 @@ Phase 1 changes vs. Phase 0
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional
 
 import numpy as np
 
-from .cohesive_zone import detect_cohesive_zone
 from .burden_layers import (
-    DP_COKE, DP_ORE, EPS_COKE, EPS_ORE,
-    apply_radial_ore_bias, layered_bed_properties, ore_fraction_field,
+    DP_COKE,
+    DP_ORE,
+    EPS_COKE,
+    EPS_ORE,
+    apply_radial_ore_bias,
+    layered_bed_properties,
+    ore_fraction_field,
     radial_ore_weight,
 )
-from .constants import GAS_SPECIES, MW
+from .cohesive_zone import detect_cohesive_zone
+from .constants import MW
 from .kinetics import (
-    ReactionRates, compute_rates, assemble_species_sources,
+    ReactionRates,
     assemble_solid_sources,
+    assemble_species_sources,
+    compute_rates,
 )
 from .logging_config import configure_logging
 from .mesh import Mesh2D, build_mesh
 from .parameters import BFParameters2D
 from .properties import (
-    gas_density, gas_viscosity, gas_cp_mass, solid_cp_mass,
-    effective_particle_diameter, gas_mw_mix, normalize_mole_fractions,
+    effective_particle_diameter,
+    gas_cp_mass,
+    gas_density,
+    gas_mw_mix,
+    gas_viscosity,
+    normalize_mole_fractions,
+    solid_cp_mass,
 )
-from .raceway import build_raceway, Raceway
+from .raceway import Raceway, build_raceway
 from .residuals import (
-    ResidualSnapshot, ResidualHistory, ReferenceScales, l2_normalised,
+    ReferenceScales,
+    ResidualHistory,
+    ResidualSnapshot,
+    l2_normalised,
 )
 from .solver_energy import solve_energy
-from .solver_gas_df import solve_coupled_momentum, MomentumSolution
+from .solver_gas_df import MomentumSolution, solve_coupled_momentum
 from .solver_species import (
-    solve_species, update_solid_phases, compute_solid_descent_velocity,
+    compute_solid_descent_velocity,
+    solve_species,
+    update_solid_phases,
 )
 
 
@@ -60,8 +76,8 @@ class SimulationFields:
     P: np.ndarray
     u_r: np.ndarray
     u_z: np.ndarray
-    x_gas: Dict[str, np.ndarray]
-    f_solid: Dict[str, np.ndarray]
+    x_gas: dict[str, np.ndarray]
+    f_solid: dict[str, np.ndarray]
     eps: np.ndarray
     dp_eff: np.ndarray
     rho_g: np.ndarray
@@ -113,9 +129,9 @@ class BlastFurnaceSimulation:
         # ore/coke endmember properties, so the inverted V does not
         # require layered_burden=True.  Secure default (bias = 0) leaves
         # both paths exactly as before.
-        self._d_eps_radial: Optional[np.ndarray] = None
-        self._d_dp_radial: Optional[np.ndarray] = None
-        self._inlet_radial: Optional[Dict[str, np.ndarray]] = None
+        self._d_eps_radial: np.ndarray | None = None
+        self._d_dp_radial: np.ndarray | None = None
+        self._inlet_radial: dict[str, np.ndarray] | None = None
         if params.burden_radial_ore_bias > 0.0:
             w_r = radial_ore_weight(self.mesh, params)
             if self._ore_frac is not None:
@@ -191,7 +207,7 @@ class BlastFurnaceSimulation:
         self._omega_lo = 0.10
         self._omega_hi = 0.90
         # Previous-iteration reaction rates for source under-relaxation
-        self._rates_prev: Optional[ReactionRates] = None
+        self._rates_prev: ReactionRates | None = None
 
         self.log.info(
             "simulation_initialised",
@@ -278,7 +294,7 @@ class BlastFurnaceSimulation:
             cohesive_mask=np.zeros(shape, dtype=bool),
         )
 
-    def _radial_inlet_composition(self, w_r: np.ndarray) -> Dict[str, np.ndarray]:
+    def _radial_inlet_composition(self, w_r: np.ndarray) -> dict[str, np.ndarray]:
         """Per-cell top-row charge composition from the radial ore weight.
 
         Ore-family inlet fractions (Fe2O3, gangue) scale with w(r) at
@@ -307,7 +323,7 @@ class BlastFurnaceSimulation:
                 break
             w_top = w_top / max(mean, 1e-12)
         w_top = np.minimum(w_top, w_max)
-        inlet: Dict[str, np.ndarray] = {}
+        inlet: dict[str, np.ndarray] = {}
         nr = self.mesh.nr
         for ph, val in base.items():
             inlet[ph] = np.full(nr, val)
@@ -371,9 +387,9 @@ class BlastFurnaceSimulation:
         )
 
     # ---- Main loop ---------------------------------------------------------
-    def run(self) -> Dict:
+    def run(self) -> dict:
         p = self.p
-        prev_means: Dict[str, float] | None = None
+        prev_means: dict[str, float] | None = None
         solid_steady_count = 0
         for it in range(p.max_outer_iter):
             try:
@@ -807,7 +823,7 @@ class BlastFurnaceSimulation:
         )
 
     # ---- Results -----------------------------------------------------------
-    def _package_results(self) -> Dict:
+    def _package_results(self) -> dict:
         f = self.fields
         mesh = self.mesh
         return {

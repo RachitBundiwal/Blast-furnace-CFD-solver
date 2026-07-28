@@ -7,14 +7,11 @@ required.  Saves all figures to ``output_dir/plots/``.
 from __future__ import annotations
 
 import os
-from typing import Dict, Optional
 
 import numpy as np
 
 try:
     import matplotlib.pyplot as plt
-    import matplotlib.patches as patches
-    from matplotlib.colors import LinearSegmentedColormap
     _HAS_MPL = True
 except ImportError:  # pragma: no cover
     _HAS_MPL = False
@@ -32,8 +29,8 @@ def _masked(arr: np.ndarray, active: np.ndarray) -> np.ma.MaskedArray:
 
 
 # ---------------------------------------------------------------------------
-def plot_all(results: Dict, params: BFParameters2D,
-             output_dir: Optional[str] = None) -> str:
+def plot_all(results: dict, params: BFParameters2D,
+             output_dir: str | None = None) -> str:
     """Generate the full plot set and return the directory where they live."""
     if not _HAS_MPL:
         raise RuntimeError("matplotlib is required for plotting")
@@ -94,7 +91,7 @@ def plot_all(results: Dict, params: BFParameters2D,
 def _plot_field(R: np.ndarray, Z: np.ndarray, field: np.ma.MaskedArray,
                 title: str, name: str, out: str, *,
                 cmap: str = "viridis", symmetric: bool = False,
-                vmin: Optional[float] = None, vmax: Optional[float] = None,
+                vmin: float | None = None, vmax: float | None = None,
                 ) -> None:
     fig, ax = plt.subplots(figsize=(6.5, 9.5))
     if symmetric:
@@ -117,7 +114,7 @@ def _plot_field(R: np.ndarray, Z: np.ndarray, field: np.ma.MaskedArray,
     plt.close(fig)
 
 
-def _plot_overlay(R: np.ndarray, Z: np.ndarray, results: Dict,
+def _plot_overlay(R: np.ndarray, Z: np.ndarray, results: dict,
                   active: np.ndarray, params: BFParameters2D, out: str) -> None:
     """Composite plot: temperature contours + CZ hatching + raceway marker."""
     fig, ax = plt.subplots(figsize=(7.5, 10))
@@ -126,7 +123,6 @@ def _plot_overlay(R: np.ndarray, Z: np.ndarray, results: Dict,
     ax.pcolormesh(-R, Z, Tg, cmap="inferno", shading="auto")
     fig.colorbar(pcm, ax=ax, shrink=0.8, label="Gas T [°C]")
 
-    cz = _masked(results["cohesive_mask"].astype(float), active)
     # Overlay cohesive zone boundary
     ax.contour(R, Z, results["cohesive_mask"].astype(float),
                levels=[0.5], colors="cyan", linewidths=1.6)
@@ -227,7 +223,7 @@ def _plot_history(history: list, out: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-def summary_metrics(results: Dict) -> Dict[str, float]:
+def summary_metrics(results: dict) -> dict[str, float]:
     """Compute integrated performance metrics."""
     active = results["active"]
     tg = results["T_g"][active]

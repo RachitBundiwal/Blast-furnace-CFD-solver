@@ -16,8 +16,6 @@ through the permeability closures in ``properties.ergun_pressure_drop_coeff``.
 """
 from __future__ import annotations
 
-from typing import Dict, Tuple
-
 import numpy as np
 
 from .parameters import BFParameters2D
@@ -51,7 +49,7 @@ def cz_shape_metrics(
     cohesive_mask: np.ndarray,
     active: np.ndarray,
     z_c: np.ndarray,
-) -> Dict[str, object]:
+) -> dict[str, object]:
     """Per-radius CZ band profile and inversion metric.
 
     For each radial index the CZ band is the lowest-to-highest active
@@ -113,12 +111,12 @@ def cz_shape_metrics(
 
 def detect_cohesive_zone(
     T_s: np.ndarray,
-    f_solid: Dict[str, np.ndarray],
+    f_solid: dict[str, np.ndarray],
     eps_base: np.ndarray,
     dp_base: np.ndarray,
     p: BFParameters2D,
     active: np.ndarray,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Return CZ mask, effective porosity and effective particle diameter.
 
     Arguments

@@ -9,8 +9,15 @@ from __future__ import annotations
 import numpy as np
 
 from .constants import (
-    GAS_SPECIES, MW, NASA7_CP, SOLID_CP_COEFF, SOLID_PHASES,
-    R_GAS, T_MIN_PHYSICAL, T_MAX_PHYSICAL, EPS_MOLE,
+    EPS_MOLE,
+    GAS_SPECIES,
+    MW,
+    NASA7_CP,
+    R_GAS,
+    SOLID_CP_COEFF,
+    SOLID_PHASES,
+    T_MAX_PHYSICAL,
+    T_MIN_PHYSICAL,
 )
 
 

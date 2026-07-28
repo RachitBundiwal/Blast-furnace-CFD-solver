@@ -67,7 +67,7 @@ from dataclasses import dataclass
 import numpy as np
 import scipy.sparse as sps
 
-from .linear_solver import solve_linear_system, LinearSolveStats
+from .linear_solver import LinearSolveStats, solve_linear_system
 from .mesh import Mesh2D
 from .parameters import BFParameters2D
 from .raceway import Raceway
@@ -463,7 +463,9 @@ def solve_darcy_forchheimer(
 
     last_stats = LinearSolveStats("darcy_forchheimer", 0, 0.0, True)
 
-    for inner in range(max_inner_iter):
+    for inner in range(max_inner_iter):  # noqa: B007 -- `inner` is read
+        # after the loop (line ~528, inner_iterations=inner+1); ruff's
+        # unused-loop-var check only looks inside the loop body.
         # 1. Permeabilities at faces
         K_r, K_z = _compute_face_permeabilities(
             u_r, u_z, rho, mu, eps, dp_eff, mesh,

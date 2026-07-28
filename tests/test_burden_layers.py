@@ -5,7 +5,10 @@ import numpy as np
 import pytest
 
 from bf2d.burden_layers import (
-    EPS_COKE, EPS_ORE, EPS_ORE_CZ, layered_bed_properties,
+    EPS_COKE,
+    EPS_ORE,
+    EPS_ORE_CZ,
+    layered_bed_properties,
     ore_fraction_field,
 )
 from bf2d.mesh import build_mesh
@@ -70,9 +73,7 @@ class TestLayeredBedProperties:
 
 class TestFluxCalcination:
     def test_r9_produces_co2_above_onset(self) -> None:
-        import bf2d.kinetics as K
-        p = BFParameters2D(nr=8, nz=20)
-        mesh = build_mesh(p)
+        import bf2d.kinetics as k
         shape = (8, 20)
         hot, cold = 1200.0, 800.0
         for T, expect_active in ((hot, True), (cold, False)):
@@ -81,7 +82,7 @@ class TestFluxCalcination:
                         "gangue", "flux")}
             x = {s: np.full(shape, 1 / 6) for s in
                  ("N2", "O2", "CO", "CO2", "H2", "H2O")}
-            r = K.compute_rates(
+            r = k.compute_rates(
                 np.full(shape, T), np.full(shape, T),
                 np.full(shape, 2.0e5), np.full(shape, 1.0),
                 np.full(shape, 0.030), x, f_solid,

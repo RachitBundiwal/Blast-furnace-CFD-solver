@@ -23,12 +23,10 @@ and can be assembled into gas and solid species source terms by
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict
 
 import numpy as np
 
-from .constants import GAS_SPECIES, MW, R_GAS, EPS_MOLE
-from .parameters import BFParameters2D
+from .constants import GAS_SPECIES, MW, R_GAS
 
 
 # ---------------------------------------------------------------------------
@@ -156,8 +154,8 @@ def compute_rates(
     P: np.ndarray,
     rho_g: np.ndarray,
     mw_mix: np.ndarray,
-    x_gas: Dict[str, np.ndarray],
-    f_solid: Dict[str, np.ndarray],
+    x_gas: dict[str, np.ndarray],
+    f_solid: dict[str, np.ndarray],
     eps: np.ndarray,
     active: np.ndarray,
     z_norm: np.ndarray | None = None,
@@ -595,7 +593,7 @@ def compute_rates(
 
 
 # ---------------------------------------------------------------------------
-def assemble_species_sources(r: ReactionRates) -> Dict[str, np.ndarray]:
+def assemble_species_sources(r: ReactionRates) -> dict[str, np.ndarray]:
     """Per-species volumetric molar production  S  [mol / (m^3 s)].
 
     Sign convention: positive means the species is **generated** locally.
@@ -630,7 +628,7 @@ def assemble_species_sources(r: ReactionRates) -> Dict[str, np.ndarray]:
     return S
 
 
-def assemble_solid_sources(r: ReactionRates) -> Dict[str, np.ndarray]:
+def assemble_solid_sources(r: ReactionRates) -> dict[str, np.ndarray]:
     """Per-phase volumetric mass source terms [kg / (m^3 s)].
 
     Positive means the solid phase gains mass locally.

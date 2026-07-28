@@ -48,7 +48,7 @@ import numpy as np
 import scipy.sparse as sps
 
 from .constants import G_ACC
-from .linear_solver import solve_linear_system, LinearSolveStats
+from .linear_solver import LinearSolveStats, solve_linear_system
 from .mesh import Mesh2D
 from .parameters import BFParameters2D
 from .properties import ergun_pressure_drop_coeff
@@ -154,7 +154,8 @@ def _assemble_radial_momentum(
                     # changes (e.g. when raceway gets hot and dense).
                     # Without this, a velocity-pinned BC + variable density
                     # produces non-physical mass injection rates.
-                    rho_face = rho[i_west, j] if west_active else rho[i_east, j] if east_active else 1.0
+                    rho_face = (rho[i_west, j] if west_active
+                                else rho[i_east, j] if east_active else 1.0)
                     u_dirichlet = -raceway.G_tuyere / max(rho_face, 1e-3)
                     add(row, row, 1.0); b[row] = u_dirichlet
                 else:
@@ -615,7 +616,6 @@ def _correct_velocities(
     nr, nz = mesh.nr, mesh.nz
     u_r_new = u_r_star.copy()
     u_z_new = u_z_star.copy()
-    tuyere_faces = set(raceway.face_indices)
 
     # Radial corrections
     for j in range(nz):

@@ -20,7 +20,6 @@ by every solver.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Tuple
 
 import numpy as np
 
@@ -65,7 +64,7 @@ class Mesh2D:
 
 # ---------------------------------------------------------------------------
 def _stretched_1d(n: int, length: float, stretch: float,
-                  cluster_side: str = "low") -> Tuple[np.ndarray, np.ndarray]:
+                  cluster_side: str = "low") -> tuple[np.ndarray, np.ndarray]:
     """Generate 1D faces and cell-centre positions.
 
     ``stretch=1`` -> uniform grid.  ``stretch>1`` clusters cells on the
@@ -189,7 +188,7 @@ def build_mesh(p: BFParameters2D) -> Mesh2D:
     )
 
 
-def _find_tuyere_band(z_c: np.ndarray, p: BFParameters2D) -> Tuple[float, float]:
+def _find_tuyere_band(z_c: np.ndarray, p: BFParameters2D) -> tuple[float, float]:
     """Approximate tuyere elevation band (+/- half a dz around the target)."""
     dz = np.diff(z_c).mean() if len(z_c) > 1 else 0.1
     z0 = max(z_c.min(), p.tuyere_elevation)

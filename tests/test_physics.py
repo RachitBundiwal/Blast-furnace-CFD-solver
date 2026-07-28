@@ -4,17 +4,24 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from bf2d.constants import GAS_SPECIES, MW, R_GAS
 from bf2d.cohesive_zone import detect_cohesive_zone
+from bf2d.constants import GAS_SPECIES, MW
 from bf2d.kinetics import (
-    compute_rates, assemble_species_sources, assemble_solid_sources,
+    assemble_solid_sources,
+    assemble_species_sources,
+    compute_rates,
 )
 from bf2d.mesh import build_mesh
 from bf2d.parameters import BFParameters2D
 from bf2d.properties import (
-    gas_density, gas_viscosity, gas_cp_mass, solid_cp_mass,
-    ergun_pressure_drop_coeff, ranz_marshall_h, gas_mw_mix,
-    normalize_mole_fractions, effective_particle_diameter,
+    effective_particle_diameter,
+    ergun_pressure_drop_coeff,
+    gas_cp_mass,
+    gas_density,
+    gas_mw_mix,
+    gas_viscosity,
+    normalize_mole_fractions,
+    ranz_marshall_h,
 )
 from bf2d.raceway import build_raceway
 
@@ -179,7 +186,6 @@ class TestKinetics:
         # Fe mass balance: rate of Fe2O3 consumption * (2Fe/1Fe2O3) * ratios
         # Just ensure Fe mass increases where reductions occur
         dFe = S_s["Fe"]
-        dHem = S_s["Fe2O3"]
         # Where hematite is consumed at high T, iron should be produced
         if (T_g > 1000).all():
             # overall reduction should yield non-negative Fe source somewhere

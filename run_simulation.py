@@ -11,14 +11,13 @@ import argparse
 import json
 import os
 import sys
-from typing import Optional
 
 from bf2d.parameters import BFParameters2D, ParameterValidationError
-from bf2d.simulation import BlastFurnaceSimulation
 from bf2d.postprocess import plot_all, summary_metrics
+from bf2d.simulation import BlastFurnaceSimulation
 
 
-def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
+def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(
         description="2D axisymmetric blast-furnace solver (PISO, full physics)",
     )
@@ -61,7 +60,7 @@ def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
     return p.parse_args(argv)
 
 
-def main(argv: Optional[list[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
 
     # Build parameters (validation happens in __post_init__).  Optional

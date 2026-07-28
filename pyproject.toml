@@ -18,7 +18,8 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.4,<9.0",
+    "pytest>=9.0.3,<10.0",   # PYSEC-2026-1845: tmpdir-handling privesc,
+                             # fixed 9.0.3; all pytest<9.0.3 is affected
     "pytest-cov>=4.1,<6.0",
     "ruff>=0.4",
     "bandit>=1.7",
@@ -43,6 +44,11 @@ markers = [
 [tool.coverage.run]
 source = ["bf2d"]
 branch = true
+# solver_gas.py (legacy SIMPLE/SIMPLEC) and solver_pressure.py (reference
+# Darcy-Forchheimer) are kept for reference only -- simulation.py imports
+# solver_gas_df.py exclusively (see README project-structure table) -- so
+# they are intentionally never exercised by the test suite.
+omit = ["bf2d/solver_gas.py", "bf2d/solver_pressure.py"]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -57,7 +63,16 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "N", "UP", "S", "A"]
-ignore = ["S101", "B008", "N803", "N806"]  # allow asserts in tests, mutable defaults in dataclass, math var names
+# S101/B008: allow asserts in tests, mutable defaults in dataclass fields.
+# N802/N803/N806/N815: plant/physics notation (T_g, u_r, wall_htc_W_m2K,
+# _idx_P, ...) is the deliberate naming convention throughout this
+# codebase -- matching the symbols in Fu 2014 / Zhou 2016 / Austin et al.
+# 1997 is more valuable here than PEP8 snake_case.
+# E702: the sparse-matrix assembly loops (solver_*.py) use a compact
+# `add(i, j, v); b[i] = x` house style pervasively (~40 sites); this is a
+# deliberate density choice for hot per-cell loops, not accidental style
+# drift, so it is not worth reformatting into physics-critical code.
+ignore = ["S101", "B008", "N802", "N803", "N806", "N815", "E702"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101", "S311"]

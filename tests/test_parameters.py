@@ -1,6 +1,8 @@
 """Unit tests for parameter validation."""
 from __future__ import annotations
 
+import dataclasses
+
 import pytest
 
 from bf2d.parameters import BFParameters2D, ParameterValidationError
@@ -78,7 +80,7 @@ class TestParameterValidation:
 
     def test_frozen_dataclass_is_immutable(self) -> None:
         p = BFParameters2D()
-        with pytest.raises(Exception):
+        with pytest.raises(dataclasses.FrozenInstanceError):
             p.nr = 100  # type: ignore[misc]
 
     def test_to_dict_includes_celsius(self) -> None:

@@ -17,8 +17,6 @@ Changes from Phase 0
 """
 from __future__ import annotations
 
-from typing import Dict, Tuple
-
 import numpy as np
 import scipy.sparse as sp
 
@@ -27,7 +25,7 @@ from .kinetics import ReactionRates
 from .linear_solver import solve_linear_system
 from .mesh import Mesh2D
 from .parameters import BFParameters2D
-from .properties import ranz_marshall_h, bed_thermal_conductivity
+from .properties import bed_thermal_conductivity, ranz_marshall_h
 
 
 # ---------------------------------------------------------------------------
@@ -77,7 +75,7 @@ def solve_energy(
     dt_energy: float | None = None,  # if None, use p.dt
     tuyere_cell_mask: np.ndarray | None = None,    # (nr,nz) cells with tuyere east face
     T_tuyere_inlet: float | None = None,           # K, blast temperature
-) -> Tuple[np.ndarray, np.ndarray, float, float]:
+) -> tuple[np.ndarray, np.ndarray, float, float]:
     """Solve block-coupled (T_g, T_s) system.
 
     Parameters
